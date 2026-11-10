@@ -1,0 +1,85 @@
+import { Routes, Route, Navigate } from 'react-router-dom'
+import AdminLogin from '../pages/admin/AdminLogin'
+import AdminSignup from '@/pages/admin/AdminSignup'
+import AdminLayout from '../pages/admin/AdminLayout'
+import Dashboard from '../pages/admin/Dashboard'
+import RoomsList from '../pages/admin/Rooms/RoomsList'
+import TenantsList from '../pages/admin/Tenants/TenantsList'
+import RentList from '../pages/admin/Rent/RentList'
+import ComplaintsList from '../pages/admin/Complaints/ComplaintsList'
+import AdminAnalytics from '@/pages/admin/AdminAnalytics'
+
+import TenantLogin from '../pages/tenant/TenantLogin'
+import TenantLayout from '../pages/tenant/TenantLayout'
+import TenantDashboard from '../pages/tenant/TenantDashboard'
+import MyRent from '../pages/tenant/MyRent'
+import Complaints from '@/pages/tenant/Complaints'
+import Profile from '@/pages/tenant/Profile'
+
+import Landing from '../pages/Landing'
+import SetPassword from '@/pages/SetPassword'
+import ForgotPassword from '@/pages/ForgotPassword'
+import ResetPassword from '@/pages/ResetPassword'
+
+import useAuth from '../hooks/useAuth'
+
+function RequireAdmin({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) return <div className="p-6">Loading...</div>
+  if (!user || user.role !== 'admin') return <Navigate to="/" replace />
+  return children
+}
+
+function RequireTenant({ children }) {
+  const { user, loading } = useAuth()
+  if (loading) return <div className="p-6">Loading...</div>
+  if (!user || user.role !== 'tenant') return <Navigate to="/" replace />
+  return children
+}
+
+
+export default function AppRoutes() {
+  return (
+    <Routes>
+      {/* Landing page (no topbar) */}
+      <Route path="/" element={<Landing />} />
+
+
+      {/* Public invite route — no auth needed */}
+      <Route path="/set-password" element={<SetPassword />} />
+
+
+      {/* Password reset flow */}
+      <Route path="/admin/forgot-password" element={<ForgotPassword />} />
+      <Route path="/tenant/forgot-password" element={<ForgotPassword />} />
+
+      {/* User clicks reset link from email — submits new password */}
+      <Route path="/reset-password" element={<ResetPassword />} />
+
+
+      {/* Admin auth & protected area */}
+      <Route path="/admin/login" element={<AdminLogin />} />
+      <Route path="/admin/signup" element={<AdminSignup />} />
+      <Route path="/admin" element={<RequireAdmin> <AdminLayout /> </RequireAdmin>}>
+        <Route path="dashboard" element={<Dashboard />} />
+        <Route path="rooms" element={<RoomsList />} />
+        <Route path="tenants" element={<TenantsList />} />
+        <Route path="rent" element={<RentList />} />
+        <Route path="complaints" element={<ComplaintsList />} />
+        <Route path="analytics" element={<AdminAnalytics />} />
+      </Route>
+
+      {/* Tenant auth & protected area  */}
+      <Route path="/tenant/login" element={<TenantLogin />} />
+      <Route path="/tenant" element={<RequireTenant><TenantLayout /></RequireTenant>}>
+        <Route path="dashboard" element={<TenantDashboard />} />
+        <Route path="rent" element={<MyRent />} />
+        <Route path="complaints" element={<Complaints />} />
+        <Route path="profile" element={<Profile />} />
+
+      </Route>
+
+      <Route path="*" element={<div className="p-8">Not Found</div>} />
+    </Routes>
+  )
+}

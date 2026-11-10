@@ -1,0 +1,91 @@
+const express = require("express");
+const pool = require("../db");
+const { adminAuth } = require('../middleware/auth')
+const AppError = require('../middleware/AppError')
+
+const router = express.Router();
+
+router.get("/summary", adminAuth, async (req, res, next) => {
+  try {
+
+    const pgId = req.user.pgId;
+
+    // Total Pending Amount
+    const [pendingRows] = await pool.query(
+      `SELECT 
+        COALESCE(SUM(amount), 0) as totalPending
+        FROM rent_records
+        WHERE status = 'Pending'
+        AND MONTH(due_date) = MONTH(CURRENT_DATE())
+        AND YEAR(due_date) = YEAR(CURRENT_DATE())
+        AND pg_id=?
+      `, [pgId])
+
+    // Total Collected Amount
+    const [paidRows] = await pool.query(`
+      SELECT
+      COALESCE(SUM(amount), 0) AS totalCollected
+      FROM rent_records
+      WHERE status = 'Paid'
+      AND MONTH(date_paid) = MONTH(CURRENT_DATE())
+      AND YEAR(date_paid) = YEAR(CURRENT_DATE())
+      AND pg_id=?
+    `, [pgId]);
+
+    // Paid count
+    const [paidCount] = await pool.query(
+      `SELECT COUNT(*) AS paidCount
+        FROM rent_records
+        WHERE status = 'Paid'
+        AND MONTH(date_paid) = MONTH(CURRENT_DATE())
+        AND YEAR(date_paid) = YEAR(CURRENT_DATE())
+        AND pg_id=?
+    `, [pgId]);
+
+    // Pending count
+    const [pendingCount] = await pool.query(
+      `SELECT COUNT(*) AS pendingCount
+        FROM rent_records
+        WHERE status = 'Pending'
+        AND MONTH(due_date) = MONTH(CURRENT_DATE())
+        AND YEAR(due_date) = YEAR(CURRENT_DATE())
+        AND pg_id=?
+    `, [pgId]);
+
+    res.json({
+      totalCollected: paidRows[0].totalCollected,
+      totalPending: pendingRows[0].totalPending,
+      paidCount: paidCount[0].paidCount,
+      pendingCount: pendingCount[0].pendingCount
+    });
+
+  } catch (error) {
+    next(error)
+  }
+})
+
+// monthly trend
+router.get("/monthly-trend", adminAuth, async (req, res, next) => {
+  try {
+    const pgId = req.user.pgId;
+
+    const [rows] = await pool.query(
+      `SELECT
+        MONTH(date_paid) AS month,
+        SUM(amount) AS total
+      FROM rent_records
+      WHERE status = 'Paid'
+        AND YEAR(date_paid) = YEAR(CURRENT_DATE())
+        AND pg_id=?
+      GROUP BY MONTH(date_paid)
+      ORDER BY MONTH(date_paid)
+    `, [pgId]);
+
+    res.json(rows);
+  } catch (error) {
+    next(error)
+  }
+});
+
+
+module.exports = router;

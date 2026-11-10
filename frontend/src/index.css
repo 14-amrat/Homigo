@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+* {
+  font-family: "Urbanist", sans-serif;
+}
+
+:root {
+  --accent: #F46A47;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+/* Root  */
+body {
+  min-height: 100%;
+  background-color: #0d0d0d;
+  background-image:
+    radial-gradient(ellipse 60% 40% at 70% 0%, rgba(244, 106, 71, 0.07), transparent);
+  color: #cbd5e1;
+}
+
+/* Sidebar */
+aside {
+  background: #111111 !important;
+  border-right: 1px solid rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Cards */
+.panel {
+  background: #1c1c1e;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.05) inset,
+    0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+/* Text */
+body,
+input,
+textarea {
+  color: #e2e8f0 !important;
+}
+
+select {
+  color: #e2e8f0 !important;
+}
+
+select option {
+  background-color: #1c1c1e !important;
+  color: #e2e8f0 !important;
+}
+
+/* Inputs */
+input,
+textarea,
+select {
+  background-color: #141414 !important;
+  border-color: rgba(255, 255, 255, 0.08) !important;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  outline: none;
+  border-color: rgba(244, 106, 71, 0.5) !important;
+  box-shadow: 0 0 0 3px rgba(244, 106, 71, 0.08);
+}
